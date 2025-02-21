@@ -92,7 +92,7 @@ public class ClaimController {
         }
     }
 
-    @GetMapping("/get-policies")
+    @GetMapping("/get-claims")
     public ResponseEntity<?> getPolicies(HttpServletRequest request) {
         Message message = new Message();
 

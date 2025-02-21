@@ -186,7 +186,7 @@ public class ClaimService {
 		}
 
 		if (claimDto.getClaimMetadata() != null) {
-			ClaimMetadata claimMetadata = new ClaimMetadata();
+			ClaimMetadata claimMetadata = claim.getClaimMetadata();
 			claimMetadata.setClaim(claim);
 			claimMetadata.setMetadata(claimDto.getClaimMetadata().getMetadata());
 			claim.setClaimMetadata(claimMetadata);
