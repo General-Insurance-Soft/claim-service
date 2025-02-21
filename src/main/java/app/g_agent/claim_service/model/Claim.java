@@ -9,10 +9,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import app.g_agent.claim_service.dto.ClaimType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,8 +39,9 @@ public class Claim {
     @Column(name = "policy_number", nullable = false)
     private String policyNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "claim_type_id", nullable = false)
-    private Long claimTypeId;
+    private ClaimType claimTypeId;
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -102,11 +106,11 @@ public class Claim {
         this.policyNumber = policyNumber;
     }
 
-    public Long getClaimTypeId() {
+    public ClaimType getClaimTypeId() {
         return claimTypeId;
     }
 
-    public void setClaimTypeId(Long claimTypeId) {
+    public void setClaimTypeId(ClaimType claimTypeId) {
         this.claimTypeId = claimTypeId;
     }
 

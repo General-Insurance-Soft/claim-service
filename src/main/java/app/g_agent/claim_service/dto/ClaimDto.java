@@ -28,6 +28,7 @@ public class ClaimDto {
 
     @NotNull(message = "claim_type_id is required")
     @JsonProperty("claim_type_id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private ClaimType claimTypeId;
 
     @JsonProperty("start_date")
@@ -79,7 +80,7 @@ public class ClaimDto {
     public void setInsuranceCompanyId(Long insuranceCompanyId) {
         this.insuranceCompanyId = insuranceCompanyId;
     }
-    
+
     public ClaimType getClaimTypeId() {
         return claimTypeId;
     }
