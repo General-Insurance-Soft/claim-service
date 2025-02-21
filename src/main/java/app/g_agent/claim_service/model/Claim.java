@@ -17,6 +17,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -30,10 +31,10 @@ public class Claim {
     private Long insuranceCompanyId;
 
     @Column(name = "claim_number", nullable = false)
-    String claimNumber;
+    private String claimNumber;
 
-    @Column(name = "certificate_number", nullable = false)
-    String certificateNumber;
+    @Column(name = "policy_number", nullable = false)
+    private String policyNumber;
 
     @Column(name = "claim_type_id", nullable = false)
     private Long claimTypeId;
@@ -50,7 +51,7 @@ public class Claim {
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;;
+    private LocalDateTime updatedAt;
 
     @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
@@ -63,6 +64,9 @@ public class Claim {
 
     @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ClaimDocument> claimDocuments = new HashSet<>();
+
+    @OneToOne(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ClaimMetadata claimMetadata;
 
     // Getters and Setters
 
@@ -82,12 +86,20 @@ public class Claim {
         this.insuranceCompanyId = insuranceCompanyId;
     }
 
-    public Set<ClaimDocument> getClaimDocuments() {
-        return claimDocuments;
+    public String getClaimNumber() {
+        return claimNumber;
     }
 
-    public void setClaimDocuments(Set<ClaimDocument> claimDocuments) {
-        this.claimDocuments = claimDocuments;
+    public void setClaimNumber(String claimNumber) {
+        this.claimNumber = claimNumber;
+    }
+
+    public String getPolicyNumber() {
+        return policyNumber;
+    }
+
+    public void setPolicyNumber(String policyNumber) {
+        this.policyNumber = policyNumber;
     }
 
     public Long getClaimTypeId() {
@@ -154,19 +166,19 @@ public class Claim {
         this.contactId = contactId;
     }
 
-    public String getClaimNumber() {
-        return claimNumber;
+    public Set<ClaimDocument> getClaimDocuments() {
+        return claimDocuments;
     }
 
-    public void setClaimNumber(String claimNumber) {
-        this.claimNumber = claimNumber;
+    public void setClaimDocuments(Set<ClaimDocument> claimDocuments) {
+        this.claimDocuments = claimDocuments;
     }
 
-    public String getCertificateNumber() {
-        return certificateNumber;
+    public ClaimMetadata getClaimMetadata() {
+        return claimMetadata;
     }
 
-    public void setCertificateNumber(String certificateNumber) {
-        this.certificateNumber = certificateNumber;
+    public void setClaimMetadata(ClaimMetadata claimMetadata) {
+        this.claimMetadata = claimMetadata;
     }
 }

@@ -18,9 +18,9 @@ public class ClaimDto {
     @JsonProperty("claim_number")
     String claimNumber;
 
-    @NotBlank(message = "certificate_number is required")
-    @JsonProperty("certificate_number")
-    String certificateNumber;
+    @NotBlank(message = "policy_number is required")
+    @JsonProperty("policy_number")
+    String policyNumber;
 
     @NotNull(message = "insurance_company_id is required")
     @JsonProperty("insurance_company_id")
@@ -28,7 +28,7 @@ public class ClaimDto {
 
     @NotNull(message = "claim_type_id is required")
     @JsonProperty("claim_type_id")
-    private Long claimTypeId;
+    private ClaimType claimTypeId;
 
     @JsonProperty("start_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -58,6 +58,10 @@ public class ClaimDto {
     @JsonProperty("claim_documents")
     private Set<ClaimDocumentDto> claimDocuments;
 
+    @JsonProperty("claim_metadata")
+    @NotNull(message = "claim_metadata is required")
+    private ClaimMetadataDto claimMetadata;
+
     // Getters and Setters
 
     public Long getId() {
@@ -75,12 +79,12 @@ public class ClaimDto {
     public void setInsuranceCompanyId(Long insuranceCompanyId) {
         this.insuranceCompanyId = insuranceCompanyId;
     }
-
-    public Long getClaimTypeId() {
+    
+    public ClaimType getClaimTypeId() {
         return claimTypeId;
     }
 
-    public void setClaimTypeId(Long claimTypeId) {
+    public void setClaimTypeId(ClaimType claimTypeId) {
         this.claimTypeId = claimTypeId;
     }
 
@@ -156,11 +160,19 @@ public class ClaimDto {
         this.claimNumber = claimNumber;
     }
 
-    public String getCertificateNumber() {
-        return certificateNumber;
+    public String getPolicyNumber() {
+        return policyNumber;
     }
 
-    public void setCertificateNumber(String certificateNumber) {
-        this.certificateNumber = certificateNumber;
+    public void setPolicyNumber(String policyNumber) {
+        this.policyNumber = policyNumber;
+    }
+
+    public ClaimMetadataDto getClaimMetadata() {
+        return claimMetadata;
+    }
+
+    public void setClaimMetadata(ClaimMetadataDto claimMetadata) {
+        this.claimMetadata = claimMetadata;
     }
 }
