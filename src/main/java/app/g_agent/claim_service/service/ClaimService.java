@@ -14,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import app.g_agent.claim_service.dto.ClaimDocumentDto;
 import app.g_agent.claim_service.dto.ClaimDto;
+import app.g_agent.claim_service.dto.ClaimMetadataDto;
 import app.g_agent.claim_service.model.Claim;
 import app.g_agent.claim_service.model.ClaimDocument;
+import app.g_agent.claim_service.model.ClaimMetadata;
 import app.g_agent.claim_service.repository.ClaimDocumentRepository;
 import app.g_agent.claim_service.repository.ClaimRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,178 +25,228 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 public class ClaimService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClaimService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ClaimService.class);
 
-    private ClaimRepository claimRepository;
-    private ClaimDocumentRepository claimDocumentRepository;
-    private JwtService jwtService;
+	private ClaimRepository claimRepository;
+	private ClaimDocumentRepository claimDocumentRepository;
+	private JwtService jwtService;
 
-    public ClaimService(ClaimRepository claimRepository, ClaimDocumentRepository claimDocumentRepository,
-            JwtService jwtService) {
-        this.claimRepository = claimRepository;
-        this.claimDocumentRepository = claimDocumentRepository;
-        this.jwtService = jwtService;
-    }
+	public ClaimService(ClaimRepository claimRepository, ClaimDocumentRepository claimDocumentRepository,
+			JwtService jwtService) {
+		this.claimRepository = claimRepository;
+		this.claimDocumentRepository = claimDocumentRepository;
+		this.jwtService = jwtService;
+	}
 
-    @Transactional
-    public void deleteClaim(HttpServletRequest request, Long id) throws Exception {
-        Optional<Claim> claimOpt = claimRepository.findById(id);
+	@Transactional
+	public void deleteClaim(HttpServletRequest request, Long id) throws Exception {
+		Optional<Claim> claimOpt = claimRepository.findById(id);
 
-        if (claimOpt.isPresent()) {
-            claimRepository.delete(claimOpt.get());
-        } else {
-            throw new Exception("The claim cannot be found");
-        }
-    }
+		if (claimOpt.isPresent()) {
+			claimRepository.delete(claimOpt.get());
+		} else {
+			throw new Exception("The claim cannot be found");
+		}
+	}
 
-    public ClaimDto getClaimById(HttpServletRequest request, Long id) throws Exception {
-        Optional<Claim> claimOpt = claimRepository.findById(id);
+	public ClaimDto getClaimById(HttpServletRequest request, Long id) throws Exception {
+		Optional<Claim> claimOpt = claimRepository.findById(id);
 
-        if (claimOpt.isPresent()) {
-            Claim claim = claimOpt.get();
-            ClaimDto claimDto = new ClaimDto();
-            claimDto.setId(claim.getId());
-            claimDto.setCertificateNumber(claim.getCertificateNumber());
-            claimDto.setClaimNumber(claim.getClaimNumber());
-            claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
-            claimDto.setClaimTypeId(claim.getClaimTypeId());
-            claimDto.setStartDate(claim.getStartDate());
-            claimDto.setEndDate(claim.getEndDate());
-            claimDto.setCompanyId(claim.getCompanyId());
-            claimDto.setContactId(claim.getContactId());
-            claimDto.setUpdatedBy(claim.getUpdatedBy());
-            claimDto.setCreatedAt(claim.getCreatedAt());
-            claimDto.setUpdatedAt(claim.getUpdatedAt());
+		if (claimOpt.isPresent()) {
+			Claim claim = claimOpt.get();
+			ClaimDto claimDto = new ClaimDto();
+			claimDto.setId(claim.getId());
+			claimDto.setClaimTypeId(claim.getClaimTypeId());
+			claimDto.setPolicyNumber(claim.getPolicyNumber());
+			claimDto.setClaimNumber(claim.getClaimNumber());
+			claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
+			claimDto.setStartDate(claim.getStartDate());
+			claimDto.setEndDate(claim.getEndDate());
+			claimDto.setCompanyId(claim.getCompanyId());
+			claimDto.setContactId(claim.getContactId());
+			claimDto.setUpdatedBy(claim.getUpdatedBy());
+			claimDto.setCreatedAt(claim.getCreatedAt());
+			claimDto.setUpdatedAt(claim.getUpdatedAt());
 
-            Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
-                ClaimDocumentDto documentDto = new ClaimDocumentDto();
-                documentDto.setId(document.getId());
-                documentDto.setFolderName(document.getFolderName());
-                documentDto.setDocumentName(document.getDocumentName());
-                documentDto.setBlobUrl(document.getBlobUrl());
-                documentDto.setUpdatedBy(document.getUpdatedBy());
-                documentDto.setCreatedAt(document.getCreatedAt());
-                return documentDto;
-            }).collect(Collectors.toSet());
+			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
+				ClaimDocumentDto documentDto = new ClaimDocumentDto();
+				documentDto.setId(document.getId());
+				documentDto.setFolderName(document.getFolderName());
+				documentDto.setDocumentName(document.getDocumentName());
+				documentDto.setBlobUrl(document.getBlobUrl());
+				documentDto.setUpdatedBy(document.getUpdatedBy());
+				documentDto.setCreatedAt(document.getCreatedAt());
+				return documentDto;
+			}).collect(Collectors.toSet());
 
-            claimDto.setClaimDocuments(claimDocumentDtos);
+			claimDto.setClaimDocuments(claimDocumentDtos);
 
-            return claimDto;
-        } else {
-            throw new Exception("The claim does not exist");
-        }
-    }
+			if (claim.getClaimMetadata() != null) {
+				ClaimMetadataDto claimMetadataDto = new ClaimMetadataDto();
+				claimMetadataDto.setId(claim.getClaimMetadata().getId());
+				claimMetadataDto.setClaimId(claim.getId());
+				claimMetadataDto.setMetadata(claim.getClaimMetadata().getMetadata());
+				claimMetadataDto.setCreatedAt(claim.getClaimMetadata().getCreatedAt());
+				claimMetadataDto.setUpdatedAt(claim.getClaimMetadata().getUpdatedAt());
+				claimDto.setClaimMetadata(claimMetadataDto);
+			}
 
-    @Transactional
-    public void createClaim(HttpServletRequest request, ClaimDto claimDto) throws Exception {
-        Claim claim = new Claim();
+			return claimDto;
+		} else {
+			throw new Exception("The claim does not exist");
+		}
+	}
 
-        Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
-        Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
-        logger.info("user ID: ==============================>" + userId);
-        claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
-        claim.setClaimTypeId(claimDto.getClaimTypeId());
-        claim.setCertificateNumber(claimDto.getCertificateNumber());
-        claim.setClaimNumber(claimDto.getClaimNumber());
-        claim.setStartDate(claimDto.getStartDate());
-        claim.setEndDate(claimDto.getEndDate());
-        claim.setCompanyId(orgId);
-        claim.setContactId(claimDto.getContactId());
-        claim.setUpdatedBy(Long.valueOf(userId));
+	@Transactional
+	public void createClaim(HttpServletRequest request, ClaimDto claimDto) throws Exception {
+		Claim claim = new Claim();
 
-        if (claimDto.getClaimDocuments() != null) {
-            Set<ClaimDocument> claimDocuments = new HashSet<>();
-            claimDto.getClaimDocuments().forEach(documentDto -> {
-                ClaimDocument document = new ClaimDocument();
-                document.setFolderName(documentDto.getFolderName());
-                document.setDocumentName(documentDto.getDocumentName());
-                document.setBlobUrl(documentDto.getBlobUrl());
-                document.setUpdatedBy(Long.valueOf(userId));
-                document.setClaim(claim); // Set the claim reference
-                claimDocuments.add(document);
-            });
-            claim.setClaimDocuments(claimDocuments);
-        }
+		Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+		logger.info("user ID: ==============================>" + userId);
+		claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
+		claim.setClaimTypeId(claimDto.getClaimTypeId());
+		claim.setPolicyNumber(claimDto.getPolicyNumber());
+		claim.setClaimNumber(claimDto.getClaimNumber());
+		claim.setStartDate(claimDto.getStartDate());
+		claim.setEndDate(claimDto.getEndDate());
+		claim.setCompanyId(orgId);
+		claim.setContactId(claimDto.getContactId());
+		claim.setUpdatedBy(Long.valueOf(userId));
 
-        try {
-            claimRepository.save(claim);
-            claimDocumentRepository.saveAll(claim.getClaimDocuments()); // Save the claim documents
-        } catch (DataIntegrityViolationException ex) {
-            if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                logger.info("Claim error ==========> id: " + ex.getMessage());
-                throw new Exception("This claim already exists.");
-            }
-            throw ex; // Rethrow if not related to constraint violation
-        }
-    }
+		if (claimDto.getClaimDocuments() != null) {
+			Set<ClaimDocument> claimDocuments = new HashSet<>();
+			claimDto.getClaimDocuments().forEach(documentDto -> {
+				ClaimDocument document = new ClaimDocument();
+				document.setFolderName(documentDto.getFolderName());
+				document.setDocumentName(documentDto.getDocumentName());
+				document.setBlobUrl(documentDto.getBlobUrl());
+				document.setUpdatedBy(Long.valueOf(userId));
+				document.setClaim(claim); // Set the claim reference
+				claimDocuments.add(document);
+			});
+			claim.setClaimDocuments(claimDocuments);
+		}
 
-    @Transactional
-    public void updateClaim(HttpServletRequest request, ClaimDto claimDto, Long id) throws Exception {
-        Optional<Claim> claimOpt = claimRepository.findById(id);
+		if (claimDto.getClaimMetadata() != null) {
+			ClaimMetadata claimMetadata = new ClaimMetadata();
+			claimMetadata.setClaim(claim);
+			claimMetadata.setMetadata(claimDto.getClaimMetadata().getMetadata());
+			claim.setClaimMetadata(claimMetadata);
+		}
 
-        if (claimOpt.isEmpty()) {
-            throw new Exception("The claim cannot be found");
-        }
+		try {
+			claimRepository.save(claim);
+			claimDocumentRepository.saveAll(claim.getClaimDocuments()); // Save the claim documents
+		} catch (DataIntegrityViolationException ex) {
+			if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+				logger.info("Claim error ==========> id: " + ex.getMessage());
+				throw new Exception("This claim already exists.");
+			}
+			throw ex; // Rethrow if not related to constraint violation
+		}
+	}
 
-        Claim claim = claimOpt.get();
+	@Transactional
+	public void updateClaim(HttpServletRequest request, ClaimDto claimDto, Long id) throws Exception {
+		Optional<Claim> claimOpt = claimRepository.findById(id);
 
-        Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
+		if (claimOpt.isEmpty()) {
+			throw new Exception("The claim cannot be found");
+		}
 
-        claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
-        claim.setClaimTypeId(claimDto.getClaimTypeId());
-        claim.setCertificateNumber(claimDto.getCertificateNumber());
-        claim.setClaimNumber(claimDto.getClaimNumber());
-        claim.setStartDate(claimDto.getStartDate());
-        claim.setEndDate(claimDto.getEndDate());
-        claim.setCompanyId(claimDto.getCompanyId());
-        claim.setContactId(claimDto.getContactId());
-        claim.setUpdatedBy(Long.valueOf(userId));
+		Claim claim = claimOpt.get();
 
-        try {
-            claimRepository.save(claim);
-        } catch (DataIntegrityViolationException ex) {
-            if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                logger.info("Claim error ==========> id: " + ex.getMessage());
-                throw new Exception("This claim already exists.");
-            }
-            throw ex; // Rethrow if not related to constraint violation
-        }
-    }
+		Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
 
-    @Transactional
-    public List<ClaimDto> getClaims(HttpServletRequest request) throws Exception {
-        List<Claim> claims = claimRepository.findAll();
+		claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
+		claim.setClaimTypeId(claimDto.getClaimTypeId());
+		claim.setClaimNumber(claimDto.getClaimNumber());
+		claim.setPolicyNumber(claimDto.getPolicyNumber());
+		claim.setStartDate(claimDto.getStartDate());
+		claim.setEndDate(claimDto.getEndDate());
+		claim.setCompanyId(claimDto.getCompanyId());
+		claim.setContactId(claimDto.getContactId());
+		claim.setUpdatedBy(Long.valueOf(userId));
 
-        return claims.stream().map(claim -> {
-            ClaimDto claimDto = new ClaimDto();
-            claimDto.setId(claim.getId());
-            claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
-            claimDto.setClaimTypeId(claim.getClaimTypeId());
-            claimDto.setCertificateNumber(claim.getCertificateNumber());
-            claimDto.setClaimNumber(claim.getClaimNumber());
-            claimDto.setStartDate(claim.getStartDate());
-            claimDto.setEndDate(claim.getEndDate());
-            claimDto.setCompanyId(claim.getCompanyId());
-            claimDto.setContactId(claim.getContactId());
-            claimDto.setUpdatedBy(claim.getUpdatedBy());
-            claimDto.setCreatedAt(claim.getCreatedAt());
-            claimDto.setUpdatedAt(claim.getUpdatedAt());
+		if (claimDto.getClaimDocuments() != null) {
+			// Clear the existing collection
+			claim.getClaimDocuments().clear();
 
-            Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
-                ClaimDocumentDto documentDto = new ClaimDocumentDto();
-                documentDto.setId(document.getId());
-                documentDto.setFolderName(document.getFolderName());
-                documentDto.setDocumentName(document.getDocumentName());
-                documentDto.setBlobUrl(document.getBlobUrl());
-                documentDto.setUpdatedBy(document.getUpdatedBy());
-                documentDto.setCreatedAt(document.getCreatedAt());
-                return documentDto;
-            }).collect(Collectors.toSet());
+			// Add the new documents to the collection
+			claimDto.getClaimDocuments().forEach(documentDto -> {
+				ClaimDocument document = new ClaimDocument();
+				document.setFolderName(documentDto.getFolderName());
+				document.setDocumentName(documentDto.getDocumentName());
+				document.setBlobUrl(documentDto.getBlobUrl());
+				document.setUpdatedBy(Long.valueOf(userId));
+				document.setClaim(claim); // Set the claim reference
+				claim.getClaimDocuments().add(document);
+			});
+		}
 
-            claimDto.setClaimDocuments(claimDocumentDtos);
+		if (claimDto.getClaimMetadata() != null) {
+			ClaimMetadata claimMetadata = new ClaimMetadata();
+			claimMetadata.setClaim(claim);
+			claimMetadata.setMetadata(claimDto.getClaimMetadata().getMetadata());
+			claim.setClaimMetadata(claimMetadata);
+		}
 
-            return claimDto;
-        }).collect(Collectors.toList());
-    }
+		try {
+			claimRepository.save(claim);
+		} catch (DataIntegrityViolationException ex) {
+			if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+				logger.info("Claim error ==========> id: " + ex.getMessage());
+				throw new Exception("This claim already exists.");
+			}
+			throw ex; // Rethrow if not related to constraint violation
+		}
+	}
+
+	@Transactional
+	public List<ClaimDto> getClaims(HttpServletRequest request) throws Exception {
+		List<Claim> claims = claimRepository.findAll();
+
+		return claims.stream().map(claim -> {
+			ClaimDto claimDto = new ClaimDto();
+			claimDto.setId(claim.getId());
+			claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
+			claimDto.setClaimTypeId(claim.getClaimTypeId());
+			claimDto.setClaimNumber(claim.getClaimNumber());
+			claimDto.setPolicyNumber(claim.getPolicyNumber());
+			claimDto.setStartDate(claim.getStartDate());
+			claimDto.setEndDate(claim.getEndDate());
+			claimDto.setCompanyId(claim.getCompanyId());
+			claimDto.setContactId(claim.getContactId());
+			claimDto.setUpdatedBy(claim.getUpdatedBy());
+			claimDto.setCreatedAt(claim.getCreatedAt());
+			claimDto.setUpdatedAt(claim.getUpdatedAt());
+
+			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
+				ClaimDocumentDto documentDto = new ClaimDocumentDto();
+				documentDto.setId(document.getId());
+				documentDto.setFolderName(document.getFolderName());
+				documentDto.setDocumentName(document.getDocumentName());
+				documentDto.setBlobUrl(document.getBlobUrl());
+				documentDto.setUpdatedBy(document.getUpdatedBy());
+				documentDto.setCreatedAt(document.getCreatedAt());
+				return documentDto;
+			}).collect(Collectors.toSet());
+
+			claimDto.setClaimDocuments(claimDocumentDtos);
+
+			if (claim.getClaimMetadata() != null) {
+				ClaimMetadataDto claimMetadataDto = new ClaimMetadataDto();
+				claimMetadataDto.setId(claim.getClaimMetadata().getId());
+				claimMetadataDto.setClaimId(claim.getId());
+				claimMetadataDto.setMetadata(claim.getClaimMetadata().getMetadata());
+				claimMetadataDto.setCreatedAt(claim.getClaimMetadata().getCreatedAt());
+				claimMetadataDto.setUpdatedAt(claim.getClaimMetadata().getUpdatedAt());
+				claimDto.setClaimMetadata(claimMetadataDto);
+			}
+
+			return claimDto;
+		}).collect(Collectors.toList());
+	}
 
 }
