@@ -27,7 +27,7 @@ import jakarta.persistence.OneToOne;
 public class Claim {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "insurance_company_id", nullable = false)

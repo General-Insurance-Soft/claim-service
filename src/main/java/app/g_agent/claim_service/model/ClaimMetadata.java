@@ -20,7 +20,7 @@ import jakarta.persistence.OneToOne;
 public class ClaimMetadata {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
