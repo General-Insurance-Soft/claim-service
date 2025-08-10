@@ -30,6 +30,14 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
 	}
 
+	@ExceptionHandler(DuplicateClaimException.class)
+	public ResponseEntity<String> handleDuplicateClaimException(DuplicateClaimException ex) {
+		Map<String, String> error = new HashMap<>();
+		error.put("name", "Error");
+		error.put("message", ex.getMessage());
+		return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+	}
+
 	@ExceptionHandler(NoHandlerFoundException.class)
 	public ResponseEntity<String> handleNotFoundException(NoHandlerFoundException ex) {
 

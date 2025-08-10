@@ -20,6 +20,7 @@ import app.g_agent.claim_service.model.ClaimDocument;
 import app.g_agent.claim_service.model.ClaimMetadata;
 import app.g_agent.claim_service.repository.ClaimDocumentRepository;
 import app.g_agent.claim_service.repository.ClaimRepository;
+import app.g_agent.claim_service.system.DuplicateClaimException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -135,10 +136,13 @@ public class ClaimService {
 		try {
 			claimRepository.save(claim);
 			claimDocumentRepository.saveAll(claim.getClaimDocuments()); // Save the claim documents
+			claimRepository.flush();
+			claimDocumentRepository.flush();
 		} catch (DataIntegrityViolationException ex) {
 			if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
 				logger.info("Claim error ==========> id: " + ex.getMessage());
-				throw new Exception("This claim already exists.");
+
+				throw new DuplicateClaimException("This claim already exists.");
 			}
 			throw ex; // Rethrow if not related to constraint violation
 		}
