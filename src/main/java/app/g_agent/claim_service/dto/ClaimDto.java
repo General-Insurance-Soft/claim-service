@@ -39,7 +39,6 @@ public class ClaimDto {
     @JsonProperty("updated_by")
     private Long updatedBy;
 
-    @NotNull(message = "Company ID is required")
     @JsonProperty("company_id")
     private Long companyId;
 
@@ -51,7 +50,6 @@ public class ClaimDto {
     private Set<ClaimDocumentDto> claimDocuments;
 
     @JsonProperty("claim_metadata")
-    @NotNull(message = "claim_metadata is required")
     private ClaimMetadataDto claimMetadata;
 
     // Getters and Setters
