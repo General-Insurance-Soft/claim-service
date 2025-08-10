@@ -1,20 +1,34 @@
 package app.g_agent.claim_service.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 
 import app.g_agent.claim_service.dto.ClaimDocumentDto;
 import app.g_agent.claim_service.dto.ClaimDto;
 import app.g_agent.claim_service.dto.ClaimMetadataDto;
+import app.g_agent.claim_service.dto.ContactAddressWrapper;
+import app.g_agent.claim_service.dto.UserDto;
 import app.g_agent.claim_service.model.Claim;
 import app.g_agent.claim_service.model.ClaimDocument;
 import app.g_agent.claim_service.model.ClaimMetadata;
@@ -31,6 +45,11 @@ public class ClaimService {
 	private ClaimRepository claimRepository;
 	private ClaimDocumentRepository claimDocumentRepository;
 	private JwtService jwtService;
+
+	@Autowired
+	private ContactsDataClient contactsDataClient;
+	@Autowired
+	private UsersDataClient usersDataClient;
 
 	public ClaimService(ClaimRepository claimRepository, ClaimDocumentRepository claimDocumentRepository,
 			JwtService jwtService) {
@@ -203,48 +222,145 @@ public class ClaimService {
 	}
 
 	@Transactional
-	public List<ClaimDto> getClaims(HttpServletRequest request) throws Exception {
-		List<Claim> claims = claimRepository.findAll();
+	public Map<String, Object> getClaims(HttpServletRequest request, MultiValueMap<String, String> headers, int page,
+			int size) throws Exception {
 
-		return claims.stream().map(claim -> {
+		// List<Proposal> proposals = policyRepository.findAll();
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+		Pageable pageable = PageRequest.of(page, size, Sort.by("created_at").descending());
+		Page<Object[]> claimPage = claimRepository.findLatestClaimsPerContact(pageable, orgId);
+
+		Set<Long> contacts = new HashSet<Long>();
+		Set<Long> updatedByUsers = new HashSet<Long>();
+
+		Set<Long> claimIds = new HashSet<>();
+		List<ClaimDto> dtoList = new ArrayList<>();
+
+		for (Object[] row : claimPage.getContent()) {
+			// ClaimDto claimDto = new ClaimDto();
+			logger.info("Mapping claim row: " + Arrays.toString(row));
+
+			// [2025-08-10, 2, 7, 2025-08-10 20:38:52.244017, 3, 1, 2025-08-10  20:38:52.244017, 2, claim rer3, dsdsd, 1, 3]
 			ClaimDto claimDto = new ClaimDto();
-			claimDto.setId(claim.getId());
-			claimDto.setClaimDate(claim.getClaimDate());
-			claimDto.setPaymentMethod(claim.getPaymentMethod());
-			claimDto.setClaimNumber(claim.getClaimNumber());
-			claimDto.setPolicyNumber(claim.getPolicyNumber());
+			claimDto.setId((Long) row[4]);
+			claimIds.add(claimDto.getId());
+			claimDto.setClaimDate(((java.sql.Date) row[0]).toLocalDate());
+			claimDto.setPaymentMethod((Long) row[5]);
+			claimDto.setClaimNumber((String) row[8]);
+			claimDto.setPolicyNumber((String) row[9]);
 
-			claimDto.setCompanyId(claim.getCompanyId());
-			claimDto.setContactId(claim.getContactId());
-			claimDto.setUpdatedBy(claim.getUpdatedBy());
-			claimDto.setCreatedAt(claim.getCreatedAt());
-			claimDto.setUpdatedAt(claim.getUpdatedAt());
+			claimDto.setCompanyId((Long) row[1]);
+			claimDto.setContactId((Long) row[2]);
+			claimDto.setUpdatedBy((Long) row[7]);
+			claimDto.setCreatedAt(((java.sql.Timestamp) row[3]).toLocalDateTime());
+			claimDto.setUpdatedAt(((java.sql.Timestamp) row[6]).toLocalDateTime());
 
-			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
-				ClaimDocumentDto documentDto = new ClaimDocumentDto();
-				documentDto.setId(document.getId());
-				documentDto.setFolderName(document.getFolderName());
-				documentDto.setDocumentName(document.getDocumentName());
-				documentDto.setBlobUrl(document.getBlobUrl());
-				documentDto.setUpdatedBy(document.getUpdatedBy());
-				documentDto.setCreatedAt(document.getCreatedAt());
-				return documentDto;
-			}).collect(Collectors.toSet());
+			dtoList.add(claimDto);
+		}
+		// start fetch documents
+		List<Claim> claimsWithDocs = claimRepository.findAllWithDocumentsByIds(claimIds);
 
-			claimDto.setClaimDocuments(claimDocumentDtos);
+		Map<Long, Set<ClaimDocumentDto>> claimDocsMap = claimsWithDocs.stream()
+				.collect(Collectors.toMap(
+						Claim::getId,
+						claim -> claim.getClaimDocuments().stream().map(document -> {
+							ClaimDocumentDto docDto = new ClaimDocumentDto();
+							docDto.setId(document.getId());
+							docDto.setFolderName(document.getFolderName());
+							docDto.setDocumentName(document.getDocumentName());
+							docDto.setBlobUrl(document.getBlobUrl());
+							docDto.setUpdatedBy(document.getUpdatedBy());
+							docDto.setCreatedAt(document.getCreatedAt());
+							return docDto;
+						}).collect(Collectors.toSet())));
 
-			if (claim.getClaimMetadata() != null) {
-				ClaimMetadataDto claimMetadataDto = new ClaimMetadataDto();
-				claimMetadataDto.setId(claim.getClaimMetadata().getId());
-				claimMetadataDto.setClaimId(claim.getId());
-				claimMetadataDto.setMetadata(claim.getClaimMetadata().getMetadata());
-				claimMetadataDto.setCreatedAt(claim.getClaimMetadata().getCreatedAt());
-				claimMetadataDto.setUpdatedAt(claim.getClaimMetadata().getUpdatedAt());
-				claimDto.setClaimMetadata(claimMetadataDto);
-			}
+		dtoList.forEach(dto -> {
+			dto.setClaimDocuments(claimDocsMap.getOrDefault(dto.getId(), Collections.emptySet()));
+		});
+		// end fetch documents
 
-			return claimDto;
-		}).collect(Collectors.toList());
+		Page<ClaimDto> claims = new PageImpl<>(dtoList, claimPage.getPageable(),
+				claimPage.getTotalElements());
+
+		ContactAddressWrapper contactsData = getAdministrativeAreasData(contacts, headers);
+		List<UserDto> updatedByUsersData = getUpdatedByData(updatedByUsers, headers);
+
+		Map<String, Object> response = new HashMap<>();
+
+		response.put("totalElements", claims.getTotalElements());
+		response.put("totalPages", claims.getTotalPages());
+		response.put("currentPage", claims.getNumber());
+
+		response.put("claims", claims.getContent());
+		response.put("contact", contactsData.contacts);
+		response.put("updatedBy", updatedByUsersData);
+		response.put("administrative_areas", contactsData.localityMapper);
+
+		return response;
+
 	}
 
+	private ContactAddressWrapper getAdministrativeAreasData(Set<Long> ids,
+			MultiValueMap<String, String> headers) {
+		logger.info("Number of admin area IDs============>: {}", ids.size());
+
+		headers.add("Content-Type", "application/json");
+
+		Map<String, String> flattenedHeaders = new HashMap<>();
+		headers.forEach((key, values) -> {
+			flattenedHeaders.put(key, String.join(",", values));
+		});
+
+		try {
+			String contactIds = this.getStringFromList(ids);
+
+			logger.info("Request body as a string ============>: {}", ids);
+
+			ContactAddressWrapper results = contactsDataClient.getContactsByIds(contactIds, flattenedHeaders);
+
+			return results;
+
+		} catch (Exception e) {
+			logger.error("Error occurred while fetching administrative areas: {}",
+					e.getMessage());
+			ContactAddressWrapper results = new ContactAddressWrapper();
+			return results;
+		}
+
+	}
+
+	private List<UserDto> getUpdatedByData(Set<Long> ids,
+			MultiValueMap<String, String> headers) {
+		logger.info("Get update by IDs, size is============>: {}", ids.size());
+
+		headers.add("Content-Type", "application/json");
+
+		Map<String, String> flattenedHeaders = new HashMap<>();
+		headers.forEach((key, values) -> {
+			flattenedHeaders.put(key, String.join(",", values));
+		});
+
+		try {
+			String stringIds = this.getStringFromList(ids);
+
+			logger.info("Request body as a string ============>: {}", stringIds);
+
+			List<UserDto> results = usersDataClient.getUsersByIds(stringIds, flattenedHeaders);
+
+			return results;
+
+		} catch (Exception e) {
+			logger.error("Error occurred while fetching users: {}",
+					e.getMessage());
+			List<UserDto> results = new ArrayList<>();
+			return results;
+		}
+
+	}
+
+	private String getStringFromList(Set<Long> ids) {
+		return ids.stream()
+				.map(String::valueOf)
+				.collect(Collectors.joining(","));
+	}
 }

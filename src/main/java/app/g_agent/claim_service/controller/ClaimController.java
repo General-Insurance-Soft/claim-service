@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -93,13 +95,16 @@ public class ClaimController {
     }
 
     @GetMapping("/get-claims")
-    public ResponseEntity<?> getPolicies(HttpServletRequest request) {
+    public ResponseEntity<?> getClaims(
+            HttpServletRequest request,
+            @RequestHeader MultiValueMap<String, String> headers,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Message message = new Message();
 
         try {
-            return ResponseEntity.ok(claimService.getClaims(request));
+            return ResponseEntity.ok(claimService.getClaims(request, headers, page, size));
         } catch (Exception ex) {
-            message.setName("Error");
             message.setMessage(ex.getMessage());
             return ResponseEntity.status(403).body(message);
         }
