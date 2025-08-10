@@ -9,13 +9,12 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import app.g_agent.claim_service.dto.ClaimType;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,24 +29,18 @@ public class Claim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "insurance_company_id", nullable = false)
-    private Long insuranceCompanyId;
-
     @Column(name = "claim_number", nullable = false)
     private String claimNumber;
+
+    @Column(name = "payment_method", nullable = false)
+    @JsonProperty("payment_method")
+    private Long paymentMethod;
 
     @Column(name = "policy_number", nullable = false)
     private String policyNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "claim_type_id", nullable = false)
-    private ClaimType claimTypeId;
-
-    @Column(name = "start_date")
-    private LocalDate startDate;
-
-    @Column(name = "end_date")
-    private LocalDate endDate;
+    @Column(name = "claim_date")
+    private LocalDate claimDate;
 
     @CreatedDate
     @Column(updatable = false, name = "created_at", nullable = false)
@@ -82,12 +75,20 @@ public class Claim {
         this.id = id;
     }
 
-    public Long getInsuranceCompanyId() {
-        return insuranceCompanyId;
+    public Long getPaymentMethod() {
+        return paymentMethod;
     }
 
-    public void setInsuranceCompanyId(Long insuranceCompanyId) {
-        this.insuranceCompanyId = insuranceCompanyId;
+    public void setPaymentMethod(Long paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public LocalDate getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(LocalDate claimDate) {
+        this.claimDate = claimDate;
     }
 
     public String getClaimNumber() {
@@ -104,30 +105,6 @@ public class Claim {
 
     public void setPolicyNumber(String policyNumber) {
         this.policyNumber = policyNumber;
-    }
-
-    public ClaimType getClaimTypeId() {
-        return claimTypeId;
-    }
-
-    public void setClaimTypeId(ClaimType claimTypeId) {
-        this.claimTypeId = claimTypeId;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
     }
 
     public LocalDateTime getCreatedAt() {

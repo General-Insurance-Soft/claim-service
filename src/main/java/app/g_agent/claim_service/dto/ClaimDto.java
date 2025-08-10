@@ -22,22 +22,13 @@ public class ClaimDto {
     @JsonProperty("policy_number")
     String policyNumber;
 
-    @NotNull(message = "insurance_company_id is required")
-    @JsonProperty("insurance_company_id")
-    private Long insuranceCompanyId;
+    @NotNull(message = "payment_method is required")
+    @JsonProperty("payment_method")
+    private Long paymentMethod;
 
-    @NotNull(message = "claim_type_id is required")
-    @JsonProperty("claim_type_id")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private ClaimType claimTypeId;
-
-    @JsonProperty("start_date")
+    @JsonProperty("claim_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
-
-    @JsonProperty("end_date")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
+    private LocalDate claimDate;
 
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
@@ -73,38 +64,6 @@ public class ClaimDto {
         this.id = id;
     }
 
-    public Long getInsuranceCompanyId() {
-        return insuranceCompanyId;
-    }
-
-    public void setInsuranceCompanyId(Long insuranceCompanyId) {
-        this.insuranceCompanyId = insuranceCompanyId;
-    }
-
-    public ClaimType getClaimTypeId() {
-        return claimTypeId;
-    }
-
-    public void setClaimTypeId(ClaimType claimTypeId) {
-        this.claimTypeId = claimTypeId;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -115,6 +74,22 @@ public class ClaimDto {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setClaimDate(LocalDate claimDate) {
+        this.claimDate = claimDate;
+    }
+
+    public LocalDate getClaimDate() {
+        return claimDate;
+    }
+
+    public Long getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(Long paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
