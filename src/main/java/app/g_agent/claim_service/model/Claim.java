@@ -20,8 +20,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "claim_number", "policy_number", "contact_id" }) })
 @EntityListeners(AuditingEntityListener.class)
 public class Claim {
 
