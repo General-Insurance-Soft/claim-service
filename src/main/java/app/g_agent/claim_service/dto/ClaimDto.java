@@ -52,6 +52,9 @@ public class ClaimDto {
     @JsonProperty("claim_metadata")
     private ClaimMetadataDto claimMetadata;
 
+    @JsonProperty("claim_count")
+    private Long claimCount;
+
     // Getters and Setters
 
     public Long getId() {
@@ -148,5 +151,13 @@ public class ClaimDto {
 
     public void setClaimMetadata(ClaimMetadataDto claimMetadata) {
         this.claimMetadata = claimMetadata;
+    }
+
+    public Long getClaimCount() {
+        return claimCount;
+    }
+
+    public void setClaimCount(Long claimCount) {
+        this.claimCount = claimCount;
     }
 }

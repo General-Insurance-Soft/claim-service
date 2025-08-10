@@ -240,7 +240,8 @@ public class ClaimService {
 			// ClaimDto claimDto = new ClaimDto();
 			logger.info("Mapping claim row: " + Arrays.toString(row));
 
-			// [2025-08-10, 2, 7, 2025-08-10 20:38:52.244017, 3, 1, 2025-08-10  20:38:52.244017, 2, claim rer3, dsdsd, 1, 3]
+			// [2025-08-10, 2, 7, 2025-08-10 20:38:52.244017, 3, 1, 2025-08-10
+			// 20:38:52.244017, 2, claim rer3, dsdsd, 1, 3]
 			ClaimDto claimDto = new ClaimDto();
 			claimDto.setId((Long) row[4]);
 			claimIds.add(claimDto.getId());
@@ -254,6 +255,11 @@ public class ClaimService {
 			claimDto.setUpdatedBy((Long) row[7]);
 			claimDto.setCreatedAt(((java.sql.Timestamp) row[3]).toLocalDateTime());
 			claimDto.setUpdatedAt(((java.sql.Timestamp) row[6]).toLocalDateTime());
+
+			contacts.add((Long) row[2]);
+			updatedByUsers.add((Long) row[7]);
+			Long claimCount = ((Number) row[row.length - 1]).longValue(); // last element
+			claimDto.setClaimCount(claimCount);
 
 			dtoList.add(claimDto);
 		}
