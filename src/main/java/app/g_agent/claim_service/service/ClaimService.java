@@ -56,12 +56,10 @@ public class ClaimService {
 			Claim claim = claimOpt.get();
 			ClaimDto claimDto = new ClaimDto();
 			claimDto.setId(claim.getId());
-			claimDto.setClaimTypeId(claim.getClaimTypeId());
 			claimDto.setPolicyNumber(claim.getPolicyNumber());
 			claimDto.setClaimNumber(claim.getClaimNumber());
-			claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
-			claimDto.setStartDate(claim.getStartDate());
-			claimDto.setEndDate(claim.getEndDate());
+			claimDto.setClaimDate(claim.getClaimDate());
+			claimDto.setPaymentMethod(claim.getPaymentMethod());
 			claimDto.setCompanyId(claim.getCompanyId());
 			claimDto.setContactId(claim.getContactId());
 			claimDto.setUpdatedBy(claim.getUpdatedBy());
@@ -104,12 +102,11 @@ public class ClaimService {
 		Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
 		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
 		logger.info("user ID: ==============================>" + userId);
-		claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
-		claim.setClaimTypeId(claimDto.getClaimTypeId());
+
 		claim.setPolicyNumber(claimDto.getPolicyNumber());
 		claim.setClaimNumber(claimDto.getClaimNumber());
-		claim.setStartDate(claimDto.getStartDate());
-		claim.setEndDate(claimDto.getEndDate());
+		claim.setClaimDate(claimDto.getClaimDate());
+		claim.setPaymentMethod(claimDto.getPaymentMethod());
 		claim.setCompanyId(orgId);
 		claim.setContactId(claimDto.getContactId());
 		claim.setUpdatedBy(Long.valueOf(userId));
@@ -159,12 +156,10 @@ public class ClaimService {
 
 		Long userId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "user-id").toString());
 
-		claim.setInsuranceCompanyId(claimDto.getInsuranceCompanyId());
-		claim.setClaimTypeId(claimDto.getClaimTypeId());
 		claim.setClaimNumber(claimDto.getClaimNumber());
 		claim.setPolicyNumber(claimDto.getPolicyNumber());
-		claim.setStartDate(claimDto.getStartDate());
-		claim.setEndDate(claimDto.getEndDate());
+		claim.setClaimDate(claimDto.getClaimDate());
+		claim.setPaymentMethod(claimDto.getPaymentMethod());
 		claim.setCompanyId(claimDto.getCompanyId());
 		claim.setContactId(claimDto.getContactId());
 		claim.setUpdatedBy(Long.valueOf(userId));
@@ -210,12 +205,11 @@ public class ClaimService {
 		return claims.stream().map(claim -> {
 			ClaimDto claimDto = new ClaimDto();
 			claimDto.setId(claim.getId());
-			claimDto.setInsuranceCompanyId(claim.getInsuranceCompanyId());
-			claimDto.setClaimTypeId(claim.getClaimTypeId());
+			claimDto.setClaimDate(claim.getClaimDate());
+			claimDto.setPaymentMethod(claim.getPaymentMethod());
 			claimDto.setClaimNumber(claim.getClaimNumber());
 			claimDto.setPolicyNumber(claim.getPolicyNumber());
-			claimDto.setStartDate(claim.getStartDate());
-			claimDto.setEndDate(claim.getEndDate());
+
 			claimDto.setCompanyId(claim.getCompanyId());
 			claimDto.setContactId(claim.getContactId());
 			claimDto.setUpdatedBy(claim.getUpdatedBy());
