@@ -60,7 +60,9 @@ public class ClaimService {
 
 	@Transactional
 	public void deleteClaim(HttpServletRequest request, Long id) throws Exception {
-		Optional<Claim> claimOpt = claimRepository.findById(id);
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+
+		Optional<Claim> claimOpt = claimRepository.findByIdAndCompanyId(id, orgId);
 
 		if (claimOpt.isPresent()) {
 			claimRepository.delete(claimOpt.get());
@@ -302,7 +304,7 @@ public class ClaimService {
 			claimDto.setCompanyId((Long) row[1]);
 			claimDto.setContactId((Long) row[2]);
 			claimDto.setUpdatedBy((Long) row[7]);
-			//claimStatus
+			// claimStatus
 			claimDto.setClaimStatus((String) row[10]);
 			claimDto.setCreatedAt(((java.sql.Timestamp) row[3]).toLocalDateTime());
 			claimDto.setUpdatedAt(((java.sql.Timestamp) row[6]).toLocalDateTime());
