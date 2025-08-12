@@ -172,7 +172,9 @@ public class ClaimService {
 
 	@Transactional
 	public void updateClaim(HttpServletRequest request, ClaimDto claimDto, Long id) throws Exception {
-		Optional<Claim> claimOpt = claimRepository.findById(id);
+
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+		Optional<Claim> claimOpt = claimRepository.findByIdAndCompanyId(id, orgId);
 
 		if (claimOpt.isEmpty()) {
 			throw new Exception("The claim cannot be found");
