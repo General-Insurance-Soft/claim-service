@@ -22,6 +22,8 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
     @Query("SELECT DISTINCT c FROM Claim c LEFT JOIN FETCH c.claimDocuments WHERE c.id IN :ids")
     List<Claim> findAllWithDocumentsByIds(@Param("ids") Set<Long> ids);
 
+    List<Claim> findByContactIdAndCompanyId(Long contactId, Long companyId);
+
     @Query(value = """
             SELECT * FROM (
                 SELECT p.*

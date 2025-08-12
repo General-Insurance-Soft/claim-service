@@ -221,6 +221,46 @@ public class ClaimService {
 		}
 	}
 
+	public List<ClaimDto> getClaimByContact(HttpServletRequest request, Long id) throws Exception {
+
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+
+		List<Claim> claimPage = claimRepository.findByContactIdAndCompanyId(id, orgId);
+
+		List<ClaimDto> claims = claimPage.stream().map(claim -> {
+
+			ClaimDto claimDto = new ClaimDto();
+			claimDto.setId(claim.getId());
+			claimDto.setPolicyNumber(claim.getPolicyNumber());
+			claimDto.setClaimNumber(claim.getClaimNumber());
+			claimDto.setClaimDate(claim.getClaimDate());
+			claimDto.setPaymentMethod(claim.getPaymentMethod());
+			claimDto.setCompanyId(claim.getCompanyId());
+			claimDto.setContactId(claim.getContactId());
+			claimDto.setUpdatedBy(claim.getUpdatedBy());
+			claimDto.setCreatedAt(claim.getCreatedAt());
+			claimDto.setUpdatedAt(claim.getUpdatedAt());
+
+			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
+				ClaimDocumentDto documentDto = new ClaimDocumentDto();
+				documentDto.setId(document.getId());
+				documentDto.setFolderName(document.getFolderName());
+				documentDto.setDocumentName(document.getDocumentName());
+				documentDto.setBlobUrl(document.getBlobUrl());
+				documentDto.setUpdatedBy(document.getUpdatedBy());
+				documentDto.setCreatedAt(document.getCreatedAt());
+				return documentDto;
+			}).collect(Collectors.toSet());
+
+			claimDto.setClaimDocuments(claimDocumentDtos);
+
+			return claimDto;
+		}).collect(Collectors.toList());
+
+		return claims;
+
+	}
+
 	@Transactional
 	public Map<String, Object> getClaims(HttpServletRequest request, MultiValueMap<String, String> headers, int page,
 			int size) throws Exception {
