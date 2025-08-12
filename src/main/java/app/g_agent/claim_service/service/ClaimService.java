@@ -190,7 +190,7 @@ public class ClaimService {
 		claim.setPolicyNumber(claimDto.getPolicyNumber());
 		claim.setClaimDate(claimDto.getClaimDate());
 		claim.setPaymentMethod(claimDto.getPaymentMethod());
-		claim.setCompanyId(claimDto.getCompanyId());
+		claim.setCompanyId((Long) orgId);
 		claim.setContactId(claimDto.getContactId());
 		claim.setUpdatedBy(Long.valueOf(userId));
 		claim.setClaimStatus(claimDto.getClaimStatus());
