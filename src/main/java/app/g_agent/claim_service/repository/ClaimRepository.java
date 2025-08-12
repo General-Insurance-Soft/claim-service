@@ -37,7 +37,7 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
                             p.updated_by,
                             p.claim_number,
                             p.policy_number,
-                            p.status,
+                            p.claim_status,
                             sub.claim_count
                             FROM (
                                 SELECT *,
