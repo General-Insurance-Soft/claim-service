@@ -70,7 +70,10 @@ public class ClaimService {
 	}
 
 	public ClaimDto getClaimById(HttpServletRequest request, Long id) throws Exception {
-		Optional<Claim> claimOpt = claimRepository.findById(id);
+
+		Long orgId = Long.parseLong(jwtService.getTokenValue(jwtService.getJWT(request), "organization-id").toString());
+
+		Optional<Claim> claimOpt = claimRepository.findByIdAndCompanyId(id, orgId);
 
 		if (claimOpt.isPresent()) {
 			Claim claim = claimOpt.get();
