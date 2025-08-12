@@ -62,6 +62,8 @@ public class Claim {
     @Column(name = "contact_id", nullable = false)
     private Long contactId;
 
+    private String claimStatus;
+
     @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ClaimDocument> claimDocuments = new HashSet<>();
 
@@ -164,5 +166,13 @@ public class Claim {
 
     public void setClaimMetadata(ClaimMetadata claimMetadata) {
         this.claimMetadata = claimMetadata;
+    }
+
+    public String getClaimStatus() {
+        return claimStatus;
+    }
+
+    public void setClaimStatus(String claimStatus) {
+        this.claimStatus = claimStatus;
     }
 }

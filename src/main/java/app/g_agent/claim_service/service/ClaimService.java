@@ -88,6 +88,7 @@ public class ClaimService {
 			claimDto.setUpdatedBy(claim.getUpdatedBy());
 			claimDto.setCreatedAt(claim.getCreatedAt());
 			claimDto.setUpdatedAt(claim.getUpdatedAt());
+			claimDto.setClaimStatus(claim.getClaimStatus());
 
 			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
 				ClaimDocumentDto documentDto = new ClaimDocumentDto();
@@ -133,6 +134,7 @@ public class ClaimService {
 		claim.setCompanyId(orgId);
 		claim.setContactId(claimDto.getContactId());
 		claim.setUpdatedBy(Long.valueOf(userId));
+		claim.setClaimStatus(claimDto.getClaimStatus());
 
 		if (claimDto.getClaimDocuments() != null) {
 			Set<ClaimDocument> claimDocuments = new HashSet<>();
@@ -191,6 +193,7 @@ public class ClaimService {
 		claim.setCompanyId(claimDto.getCompanyId());
 		claim.setContactId(claimDto.getContactId());
 		claim.setUpdatedBy(Long.valueOf(userId));
+		claim.setClaimStatus(claimDto.getClaimStatus());
 
 		if (claimDto.getClaimDocuments() != null) {
 			// Clear the existing collection
@@ -245,6 +248,7 @@ public class ClaimService {
 			claimDto.setUpdatedBy(claim.getUpdatedBy());
 			claimDto.setCreatedAt(claim.getCreatedAt());
 			claimDto.setUpdatedAt(claim.getUpdatedAt());
+			claimDto.setClaimStatus(claim.getClaimStatus());
 
 			Set<ClaimDocumentDto> claimDocumentDtos = claim.getClaimDocuments().stream().map(document -> {
 				ClaimDocumentDto documentDto = new ClaimDocumentDto();
@@ -298,6 +302,8 @@ public class ClaimService {
 			claimDto.setCompanyId((Long) row[1]);
 			claimDto.setContactId((Long) row[2]);
 			claimDto.setUpdatedBy((Long) row[7]);
+			//claimStatus
+			claimDto.setClaimStatus((String) row[10]);
 			claimDto.setCreatedAt(((java.sql.Timestamp) row[3]).toLocalDateTime());
 			claimDto.setUpdatedAt(((java.sql.Timestamp) row[6]).toLocalDateTime());
 

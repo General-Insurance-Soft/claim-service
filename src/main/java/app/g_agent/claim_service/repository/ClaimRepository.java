@@ -25,24 +25,35 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
     List<Claim> findByContactIdAndCompanyId(Long contactId, Long companyId);
 
     @Query(value = """
-            SELECT * FROM (
-                SELECT p.*
-                     , sub.claim_count
-                FROM (
-                    SELECT *,
-                           ROW_NUMBER() OVER (PARTITION BY contact_id ORDER BY created_at DESC) AS row_num
-                    FROM claim
-                    WHERE company_id = :companyId
-                ) p
-                JOIN (
-                    SELECT contact_id, COUNT(*) AS claim_count
-                    FROM claim
-                    WHERE company_id = :companyId
-                    GROUP BY contact_id
-                ) sub ON p.contact_id = sub.contact_id
-                WHERE p.row_num = 1
-            ) result
-            """, countQuery = """
+                        SELECT * FROM (
+                            SELECT
+                            p.claim_date,
+                            p.company_id,
+                            p.contact_id,
+                            p.created_at,
+                            p.id,
+                            p.payment_method,
+                            p.updated_at,
+                            p.updated_by,
+                            p.claim_number,
+                            p.policy_number,
+                            p.status,
+                            sub.claim_count
+                            FROM (
+                                SELECT *,
+                                       ROW_NUMBER() OVER (PARTITION BY contact_id ORDER BY created_at DESC) AS row_num
+                                FROM claim
+                                WHERE company_id = :companyId
+                            ) p
+                            JOIN (
+                                SELECT contact_id, COUNT(*) AS claim_count
+                                FROM claim
+                                WHERE company_id = :companyId
+                                GROUP BY contact_id
+                            ) sub ON p.contact_id = sub.contact_id
+                            WHERE p.row_num = 1
+                        ) result
+                        """, countQuery = """
             SELECT COUNT(*) FROM (
                 SELECT contact_id
                 FROM claim

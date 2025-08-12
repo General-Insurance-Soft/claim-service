@@ -55,6 +55,11 @@ public class ClaimDto {
     @JsonProperty("claim_count")
     private Long claimCount;
 
+    @JsonProperty("claim_status")
+    @NotBlank(message = "claim_status is required")
+    @NotNull(message = "claim_status is required")
+    private String claimStatus;
+
     // Getters and Setters
 
     public Long getId() {
@@ -159,5 +164,13 @@ public class ClaimDto {
 
     public void setClaimCount(Long claimCount) {
         this.claimCount = claimCount;
+    }
+
+    public String getClaimStatus() {
+        return claimStatus;
+    }
+
+    public void setClaimStatus(String claimStatus) {
+        this.claimStatus = claimStatus;
     }
 }
